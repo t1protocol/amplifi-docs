@@ -1,0 +1,122 @@
+---
+title: "Risk Engine and Liquidations"
+description: "How Amplifi's risk engine works — dynamic liquidation pricing, orderbook depth adjustment, and the liquidation flow."
+---
+
+## Overview
+
+Amplifi's risk engine protects lending pools from bad debt by liquidating positions before the loan exceeds the value of the collateral. Unlike protocols that use static liquidation ratios, Amplifi computes liquidation prices **dynamically** based on real-time orderbook conditions.
+
+The risk engine has three layers:
+
+1. **Equity-based threshold (Layer 1):** Trigger when projected post-sale equity drops to 30% of initial margin
+2. **Fee-adjusted computation:** Liquidation price accounts for CLOB taker fees via a quadratic formula
+3. **Depth adjustment (Layer 3):** Liquidation price tightens when orderbook liquidity is insufficient to execute the sale
+
+## Liquidation price calculation
+
+### Base formula
+
+For a leveraged position:
+
+```
+badDebtPrice   = entryPrice - (equity / shares)
+liquidationPrice = entryPrice - (equity × 0.7 / shares)
+```
+
+Where:
+- `equity = margin - accruedInterest`
+- `0.7 = 1 - Layer1Threshold (0.3)`
+- `badDebtPrice` = the price at which the loan would not be fully repaid
+
+The liquidation price is always **above** the bad debt price — this gap is the safety buffer.
+
+### Fee adjustment
+
+Polymarket charges taker fees on sells. The fee formula is non-linear: `fee = shares × rate × price × (1 - price)`. Amplifi solves a quadratic equation to find the price at which net proceeds (after fees) equal the loan plus the Layer 1 buffer.
+
+This means the displayed liquidation price already accounts for the cost of selling your shares. You won't be liquidated and then hit with an unexpected fee.
+
+### Interest adjustment
+
+As interest accrues on the loan, equity decreases. The risk engine recomputes the liquidation price every minute using current accrued interest, not the interest at position open. Over time, the liquidation price drifts closer to the current price.
+
+## Depth adjustment
+
+The most important differentiator. Static liquidation ratios assume infinite liquidity — in practice, selling 1,000 shares into a thin orderbook moves the price significantly.
+
+Amplifi's depth adjustment works as follows:
+
+1. **Measure bid-side depth** between the liquidation price and the bad debt price
+2. **Compare to required depth:** `requiredDepth = positionSize × depthMultiplier`
+3. **Compute depth ratio:** `depthRatio = min(actualDepth / requiredDepth, 1)`
+4. **Adjust the liquidation price:**
+   - Full depth → liquidation price stays at the base level
+   - Zero depth → liquidation price moves up to the bad debt price (maximum tightening)
+   - Partial depth → linear interpolation between the two
+
+```
+maxAdjustment     = baseLiqPrice - badDebtPrice
+adjustedLiqPrice  = baseLiqPrice + (1 - depthRatio) × maxAdjustment
+```
+
+**Why this matters:** A $500 position in a market with $50 of resting bids will have a much tighter liquidation price than the same position in a market with $5,000 of bids. The risk engine adapts to the actual execution environment, not a theoretical model.
+
+<Note>
+Depth adjustment transitions and illiquidity warnings use a 60-second per-position cooldown to prevent oscillation.
+</Note>
+
+## Price resolution
+
+The risk engine resolves prices through a 3-tier fallback:
+
+1. **WebSocket best bid** — real-time, preferred source
+2. **REST best bid** — rate-limited fallback when WS is disconnected
+3. **Last known price** — used temporarily with an alert to the operations team
+
+Liquidation uses **best bid exclusively** — not mid-price. This is the price at which the position could actually be sold.
+
+## Liquidation execution flow
+
+When the price monitor detects that a position's price has breached its liquidation threshold:
+
+<Steps>
+  <Step title="Flag position">
+    Position is added to the in-memory liquidation set and marked as liquidating in the database. This prevents duplicate liquidation attempts.
+  </Step>
+  <Step title="Sell shares">
+    Market sell order is placed on the Polymarket CLOB. If the order fails (thin book, temporary issues), the executor retries up to 5 times with exponential backoff (1s, 2s, 4s, 8s, 16s).
+  </Step>
+  <Step title="Confirm settlement">
+    After each fill, the executor waits for trade confirmation to capture the actual exit price and fee amount.
+  </Step>
+  <Step title="Repay loan">
+    All coupled loans are repaid from the sale proceeds. Positions may have multiple loans if they were merged.
+  </Step>
+  <Step title="Apply penalty">
+    Liquidation penalty is computed on remaining equity and transferred to the protocol fee address.
+  </Step>
+  <Step title="Finalize">
+    Position is marked as `LIQUIDATED`. Remaining equity (after loan repayment and penalty) stays in the user's deposit wallet.
+  </Step>
+</Steps>
+
+### Dust positions
+
+Positions with fewer than 0.01 shares or less than $1 in notional value are finalized without further sell attempts. The Polymarket CLOB has minimum order size requirements that make tiny positions unsellable.
+
+### Cooldown on failure
+
+If all retries exhaust without a successful sale, a cooldown period prevents the executor from immediately re-attempting. The cooldown starts at 5 minutes and doubles on consecutive failures, up to an 80-minute cap. This prevents the liquidation loop from blocking other positions.
+
+## Bad debt
+
+If the sale proceeds are less than the loan principal, the difference is **bad debt** — a loss absorbed by the lending pool.
+
+Amplifi minimizes bad debt through:
+- Conservative Layer 1 threshold (30% equity buffer at trigger)
+- Fee-aware liquidation pricing (no surprise deductions)
+- Depth-adjusted triggers (tighter threshold when liquidity is thin)
+- Fast execution (sub-second price monitoring, immediate sell orders)
+
+Bad debt is not zero-risk. It is the fundamental risk that lenders accept in exchange for yield. Amplifi's architecture makes it rare and bounded — not impossible.

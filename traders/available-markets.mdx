@@ -1,0 +1,62 @@
+---
+title: "Available Markets"
+description: "Markets available for trading on Amplifi, sourced from Polymarket."
+---
+
+## Market source
+
+All markets on Amplifi are sourced from [Polymarket](https://polymarket.com). When you trade on Amplifi, you are buying and selling real Polymarket conditional tokens on the Polymarket CLOB (Central Limit Order Book).
+
+## Market categories
+
+Markets are organized by category, each with different leverage availability:
+
+| Category | Examples | Leverage |
+|---|---|---|
+| **Crypto** | BTC price above $X on date, ETH monthly close | Up to 10x |
+| **Politics** | Presidential elections, congressional races | 1x only |
+| **Sports** | NFL, NBA, MLB, soccer outcomes | 1x only |
+| **Geopolitics** | Conflict outcomes, diplomatic events | 1x only |
+| **Finance** | Stock market milestones, economic indicators | 1x only |
+| **Culture** | Awards shows, entertainment events | 1x only |
+
+<Info>
+Leverage above 1x is currently available for **crypto markets only**. Other categories will be enabled as the risk engine is validated across more market types.
+</Info>
+
+## How markets are added
+
+Markets are curated by the Amplifi team based on:
+
+- **Liquidity:** Sufficient orderbook depth on Polymarket to support leveraged trading
+- **Duration:** Longer-duration markets (weeks to months) are preferred — they have deeper orderbooks and more sustained liquidity
+- **Volume:** Markets with healthy 24h trading volume
+
+Short-duration or event-driven markets with thin orderbooks (e.g., flash political events, single-game sports bets) may be available at 1x but are not suitable for leverage.
+
+## Crypto markets in detail
+
+The primary leverage-enabled markets are **multi-strike crypto price markets** on Polymarket. These are structured as:
+
+> "Will BTC be above $105,000 on May 23?"
+
+Each event contains multiple strike prices (e.g., $100K, $102K, $105K, $108K, $110K), creating a ladder of binary options around the current spot price. New events are created daily or weekly.
+
+These markets typically have:
+- Deep orderbooks ($100K+ in resting liquidity at multiple price levels)
+- High 24h volume
+- Clear resolution criteria (spot price at a specific time)
+
+## Market resolution
+
+When a Polymarket market resolves:
+
+- **Winning shares** are redeemed at **$1.00** per share
+- **Losing shares** are redeemed at **$0.00** per share
+
+Redemption is automatic — you do not need to manually close your position. Amplifi's market resolution service detects the outcome and redeems your shares on-chain via the Conditional Token Framework (CTF).
+
+After redemption:
+1. Any outstanding loan is repaid from the proceeds
+2. Remaining equity stays in your deposit wallet
+3. The position is marked as closed

@@ -1,0 +1,59 @@
+---
+title: "Fees"
+description: "Current fee structure on Amplifi."
+---
+
+## Trading fees
+
+<Info>
+**Amplifi currently charges zero trading fees.** There is no platform fee on opening, closing, or managing positions.
+</Info>
+
+## Polymarket CLOB fees
+
+When trading on Polymarket's orderbook, standard Polymarket taker fees apply. These are set by Polymarket (not Amplifi) and vary by market.
+
+The taker fee formula is:
+
+```
+fee = shares × (feeRateBps / 10,000) × price × (1 - price)
+```
+
+Key points:
+- Fees are highest when the share price is near $0.50 (maximum `p × (1-p)`)
+- Fees approach zero as the price nears $0 or $1
+- Some markets (e.g., political markets) may have fees disabled entirely
+
+Amplifi accounts for these fees in all position calculations, including liquidation price computation. Your liquidation price already factors in the cost of selling your shares.
+
+## Lending interest
+
+Leveraged positions borrow from a lending pool. Interest accrues on the loan for the duration the position is open.
+
+- Interest rate is set per pool and may vary by market category
+- Interest is denominated in USDC and deducted from your equity at position close
+- Accrued interest affects your liquidation price — as interest accumulates, the liquidation threshold tightens
+
+## Withdrawal fee
+
+A flat **$0.20 USDC** fee is deducted on each withdrawal to cover the Polygon gas cost of the on-chain transaction.
+
+## Liquidation penalty
+
+If your position is liquidated, a penalty is applied to the remaining equity:
+
+```
+penalty = (proceeds - loanPrincipal) × penaltyPercent / 100
+```
+
+The penalty is transferred to the protocol fee address. The remainder of your equity stays in your deposit wallet.
+
+## Fee summary
+
+| Fee type | Amount | When it applies |
+|---|---|---|
+| Amplifi trading fee | **$0** | — |
+| Polymarket taker fee | Variable (set by Polymarket) | On every CLOB trade |
+| Lending interest | Variable (per pool) | While leveraged position is open |
+| Withdrawal fee | $0.20 USDC | On each withdrawal |
+| Liquidation penalty | % of remaining equity | Only on liquidation |

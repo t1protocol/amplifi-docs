@@ -1,0 +1,67 @@
+---
+title: "How Amplifi Wallets Work"
+description: "Each Amplifi user gets a dedicated smart contract wallet on Polygon that enforces trading policies."
+---
+
+## Deposit wallet
+
+When you sign up for Amplifi, a **deposit wallet** is created for you on Polygon. This is a smart contract wallet (ERC-1967 proxy) derived via CREATE2 — meaning the address is deterministic and known before the wallet is even deployed on-chain.
+
+The wallet is materialized (deployed) by the Polymarket relayer on your first transaction.
+
+## How it works
+
+Your deposit wallet is controlled by a **server-managed owner keypair**. This keypair signs all trading operations on your behalf using EIP-712 typed data signatures. The Polymarket relayer submits the transactions and pays gas — you never need POL (Polygon's native token).
+
+### What the wallet can do
+
+- **Deposit:** Receive USDC and wrap it to pUSD (Polymarket's internal stablecoin)
+- **Trade:** Buy and sell shares on Polymarket's CLOB
+- **Withdraw:** Unwrap pUSD back to USDC.e and send it to your connected wallet
+- **Repay loans:** Transfer funds to the lending pool on position close
+- **Pay fees:** Transfer liquidation penalties and withdrawal fees to the protocol
+
+### What the wallet cannot do
+
+- Transfer funds to arbitrary addresses
+- Interact with contracts outside the approved set (Polymarket exchange, lending pool, onramp)
+- Be drained by the user or any third party outside of the approved operations
+
+This restriction is what enables under-collateralized lending. The lending pool extends credit because the wallet **enforces** how funds are used.
+
+## Gas and fees
+
+The Polymarket relayer pays all gas costs for wallet operations (deployment, approvals, trades, withdrawals). You do not need to hold POL or any gas token.
+
+A small withdrawal fee ($0.20 USDC) covers the Polygon transaction cost for the withdrawal operation.
+
+## Deposit and withdrawal flow
+
+### Depositing
+
+1. You approve USDC transfer from your connected wallet
+2. USDC is sent to your deposit wallet on Polygon
+3. The wallet wraps USDC.e to pUSD via the CollateralOnramp contract
+4. pUSD is now available for trading
+
+### Withdrawing
+
+1. You request a withdrawal from the Amplifi UI
+2. The wallet unwraps pUSD back to USDC.e via the Offramp contract
+3. USDC.e is sent directly to your connected wallet on Polygon
+4. A $0.20 fee is deducted to cover gas
+
+<Info>
+Withdrawals are Polygon-native. There is no bridge to Ethereum or other chains — you receive USDC.e on Polygon.
+</Info>
+
+## Security model
+
+| Property | Detail |
+|---|---|
+| **Wallet type** | ERC-1967 proxy, CREATE2-derived |
+| **Key management** | Server-managed owner EOA per user |
+| **Transaction signing** | EIP-712 typed data |
+| **Gas payment** | Polymarket relayer (user pays nothing) |
+| **Fund restrictions** | Whitelisted contracts only (exchange, lending pool, onramp/offramp) |
+| **Upgrade path** | Proxy pattern allows contract upgrades without moving funds |

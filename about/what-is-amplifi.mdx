@@ -1,0 +1,77 @@
+---
+title: "What is Amplifi?"
+description: "Amplifi is the permissionless credit layer for DeFi — enabling under-collateralized lending and up to 10x leverage on prediction markets."
+---
+
+## The short version
+
+Amplifi lets you trade Polymarket positions on margin. You deposit collateral, Amplifi borrows the rest from a lending pool, and you trade with up to 10x leverage. If your position moves against you, Amplifi's risk engine liquidates automatically to protect the pool.
+
+No KYC. No credit score. No custodial counterparty. Just collateral, a policy, and a liquidation engine.
+
+## The problem
+
+DeFi lending today requires over-collateralization. To borrow $100, you lock up $150+. This locks capital, limits leverage, and blocks strategies that traders actually need: leveraged prediction markets, cross-venue margin, and basis trading.
+
+Prediction markets alone process $10B+/month in volume — all at 1x. There is no native margin system on Polymarket, Kalshi, or any major prediction market.
+
+## How Amplifi works
+
+<Steps>
+  <Step title="Deposit collateral">
+    You deposit USDC as margin into your Amplifi wallet — a smart contract wallet on Polygon controlled by a server-managed keypair.
+  </Step>
+  <Step title="Borrow from the lending pool">
+    Amplifi borrows the remainder from an isolated lending pool. At 5x leverage on a $50 position, you deposit $10 and Amplifi borrows $40.
+  </Step>
+  <Step title="Trade on Polymarket">
+    Your full position is opened on Polymarket's CLOB through your deposit wallet. You are trading real Polymarket shares — not a synthetic or derivative.
+  </Step>
+  <Step title="Risk engine monitors continuously">
+    Amplifi's price monitor checks orderbook prices and depth every few seconds. Liquidation prices adjust dynamically based on real-time liquidity.
+  </Step>
+  <Step title="Close or get liquidated">
+    You close your position at any time. If the price hits your liquidation threshold, Amplifi sells your shares automatically, repays the loan, and returns remaining equity to you.
+  </Step>
+</Steps>
+
+## Architecture at a glance
+
+```
+Trader → Amplifi Wallet (Polygon) → Polymarket CLOB
+                  ↑
+          Lending Pool (isolated, on-chain)
+                  ↑
+              Risk Engine (price monitor + depth adjustment)
+```
+
+**Key design decisions:**
+
+- **Isolated lending pools.** Each pool has its own capital, parameters, and risk profile. A bad outcome in one pool cannot affect another. This is not a shared insurance fund — it is structural isolation.
+- **Real positions, not synthetics.** You hold actual Polymarket conditional tokens. Settlement, redemption, and market resolution all work natively.
+- **Deposit wallets, not custodial accounts.** Each user gets a CREATE2-derived smart contract wallet on Polygon. The wallet enforces spending policies — funds can only be used for approved trading operations.
+- **Dynamic liquidation pricing.** Liquidation thresholds adjust based on orderbook depth, not static ratios. Thin liquidity = tighter trigger. Deep liquidity = more room.
+
+## Who is Amplifi for?
+
+<CardGroup cols={2}>
+  <Card title="Traders" icon="chart-line">
+    Access up to 10x leverage on Polymarket crypto markets. Trade with conviction without tying up 100% of your capital.
+  </Card>
+  <Card title="Lenders" icon="vault">
+    Supply capital to isolated lending pools and earn yield from borrower interest. Risk is bounded by pool isolation and automated liquidation — not bilateral trust.
+  </Card>
+</CardGroup>
+
+## What makes Amplifi different
+
+| | Amplifi | Gearbox | Wildcat | 3Jane |
+|---|---|---|---|---|
+| Under-collateralized | Yes | Yes | Yes | Yes |
+| Prediction market leverage | Yes | No (smart contract only) | No enforcement | No |
+| Permissionless | Yes | Yes | KYB required | US credit score required |
+| Automated liquidation | Yes | Yes | No | Off-chain enforcement |
+| Cross-chain | Yes | No | No | Limited |
+| Self-custodial | Yes (deposit wallet) | Yes | Borrower custody | Yes |
+
+Amplifi is the only protocol that combines non-custodial fund controls with an automated liquidation engine across on-chain and off-chain venues.

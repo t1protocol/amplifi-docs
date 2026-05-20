@@ -1,0 +1,102 @@
+---
+title: "Risks"
+description: "An honest accounting of the risks of using Amplifi."
+---
+
+## This page exists because we believe in transparency
+
+Amplifi is a leverage protocol. Leverage amplifies both gains and losses. This page describes the real risks — not the theoretical ones from a whitepaper, but the ones that actually matter.
+
+## Trader risks
+
+### Liquidation
+
+If the market price moves against your position and reaches the liquidation threshold, your position is automatically closed. You will receive whatever equity remains after loan repayment and the liquidation penalty.
+
+**Liquidation is not zero-sum.** You do not necessarily lose your entire margin. The Layer 1 threshold triggers liquidation with approximately 30% of your original equity remaining. However, execution slippage, fees, and the liquidation penalty will reduce the actual amount returned.
+
+### Dynamic liquidation prices
+
+Your liquidation price is not fixed at position open. It moves based on:
+- **Orderbook depth:** If liquidity thins (market makers pull orders, low activity), your liquidation price tightens
+- **Interest accrual:** As interest accumulates on the loan, your effective equity decreases
+- **Market conditions:** Volatile markets may see rapid depth changes
+
+A position that looked safe at open can become close to liquidation if the orderbook dries up — even without a price move.
+
+### Market resolution risk
+
+Polymarket markets resolve based on external oracle outcomes. There is a risk of:
+- Incorrect resolution (rare, subject to UMA dispute process)
+- Delayed resolution (during UMA dispute windows, the orderbook may be empty)
+- Resolution at an unexpected time
+
+Amplifi handles resolution automatically via on-chain redemption, but edge cases around disputed markets can create temporary uncertainty.
+
+### Smart contract risk
+
+Your funds are held in a smart contract wallet and interact with the Polymarket exchange contracts and Amplifi's lending pool contracts. As with any DeFi protocol, there is inherent smart contract risk — bugs, exploits, or unexpected interactions.
+
+## Lender risks
+
+### Bad debt
+
+The primary risk for lenders. If a liquidation occurs and the sale proceeds are insufficient to repay the full loan, the difference is bad debt absorbed by the pool.
+
+Amplifi mitigates this through dynamic liquidation pricing, depth adjustment, and conservative thresholds. But bad debt is a non-zero probability event, especially in:
+- Flash crashes with sudden liquidity disappearance
+- Markets that resolve adversely during thin orderbook conditions
+- Correlated liquidations across multiple positions in the same market
+
+### Pool isolation
+
+Each lending pool is isolated. Bad debt in one pool does not affect other pools. However, if a specific pool experiences significant bad debt, lenders in that pool bear the loss.
+
+This is by design — pool isolation means lenders choose their risk exposure. A crypto-only pool has different risk characteristics than a diversified pool.
+
+### Liquidity risk
+
+Lender withdrawals are subject to pool utilization. If most of the pool's capital is currently lent out, withdrawals may be delayed until loans are repaid. This is standard for lending protocols but worth noting.
+
+## Protocol risks
+
+### Operational risk
+
+Amplifi's backend runs on cloud infrastructure. Downtime, network issues, or RPC failures could delay:
+- Liquidation execution (price monitor stops ticking)
+- Position opening/closing (API unavailable)
+- Loan repayment (relayer or RPC issues)
+
+The system includes monitoring, alerting, and fallback mechanisms, but operational failures are possible.
+
+### Polymarket dependency
+
+Amplifi is built on top of Polymarket. If Polymarket experiences:
+- CLOB downtime or degradation
+- Relayer failures
+- Regulatory action
+- Smart contract issues
+
+Amplifi positions would be directly affected. This is a platform dependency risk.
+
+### Blockchain risk
+
+All operations settle on Polygon. Polygon network congestion, RPC outages, or chain-level issues could affect transaction execution. The lending pool contracts and deposit wallets are on-chain — any Polygon-level event impacts Amplifi.
+
+## What Amplifi does about these risks
+
+| Risk | Mitigation |
+|---|---|
+| Bad debt | Dynamic liquidation pricing, depth adjustment, Layer 1 threshold, fee-aware computation |
+| Thin liquidity | Depth multiplier requirements, leverage caps on low-volume markets |
+| Operational failure | Multi-tier price fallback (WS → REST → last known), PagerDuty alerting, automatic recovery |
+| Market manipulation | Only offers leverage on mature, liquid markets with deep orderbooks |
+| Interest accumulation | Interest-adjusted liquidation thresholds, recomputed every minute |
+| Cascading failures | Pool isolation — one pool's bad debt cannot affect another |
+
+## The bottom line
+
+Leverage trading is risky. Under-collateralized lending is risky. Amplifi's architecture is designed to make these risks **transparent, bounded, and manageable** — not to eliminate them.
+
+- **Traders:** Never risk more than you can afford to lose. Monitor your positions. Understand that liquidation prices are dynamic.
+- **Lenders:** Understand that bad debt is possible. Choose pools that match your risk tolerance. Pool isolation protects you from other pools but not from your own pool's outcomes.

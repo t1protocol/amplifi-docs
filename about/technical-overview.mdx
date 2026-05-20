@@ -1,0 +1,113 @@
+---
+title: "Technical Overview"
+description: "Architecture, components, and data flow of the Amplifi protocol."
+---
+
+## System architecture
+
+Amplifi is a backend service that mediates between traders, lending pools, and Polymarket's CLOB (Central Limit Order Book). All positions are real Polymarket conditional tokens — not synthetics.
+
+```
+┌─────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│   Frontend   │────▶│  Amplifi Backend  │────▶│ Polymarket CLOB │
+│  (Next.js)   │     │   (Bun + TS)      │     │   (REST + WS)   │
+└─────────────┘     └──────────────────┘     └─────────────────┘
+                            │
+                    ┌───────┴────────┐
+                    ▼                ▼
+            ┌──────────────┐  ┌──────────────┐
+            │ Lending Pool │  │   Postgres   │
+            │  (Polygon)   │  │  (positions, │
+            │              │  │  loans, etc) │
+            └──────────────┘  └──────────────┘
+```
+
+## Core components
+
+### Deposit wallet
+
+Each user gets a **CREATE2-derived smart contract wallet** (ERC-1967 proxy) on Polygon. The wallet address is deterministic and known before deployment. It is materialized by the Polymarket relayer on first use.
+
+- Server-managed owner EOA signs all operations via EIP-712
+- The Polymarket relayer pays gas — users never need POL
+- Funds can only be used for: Polymarket trading, loan repayment, withdrawal, and fee transfer
+- All approvals (pUSD, conditional tokens) are set at wallet creation
+
+### Lending pools
+
+On-chain Solidity contracts on Polygon. Each pool has:
+
+- `borrow(amount)` — called by Amplifi when opening a leveraged position
+- `repay(loanId, maxRepay)` — called after position close or liquidation
+- `deposit(amount)` / `withdraw(amount)` — for lenders
+- Per-loan tracking of principal, interest accrual, and repayment status
+
+Pools are isolated by design. Category-specific override pools (e.g., sports at a different rate) are configured via environment variables. The backend routes loans to the correct pool at issuance time.
+
+### Price monitor and risk engine
+
+The price monitor polls Polymarket's WebSocket and REST APIs for real-time prices and orderbook depth. It runs on a configurable tick interval and evaluates every open leveraged position on each tick.
+
+**Price resolution** follows a 3-tier fallback:
+1. Fresh WebSocket best bid
+2. Rate-limited REST best bid
+3. Last known price (with alert)
+
+**Liquidation price** is computed dynamically, accounting for:
+- Entry price and leverage
+- Accrued loan interest
+- CLOB taker fees (quadratic formula for fee-adjusted threshold)
+- Orderbook depth (positions in thin markets get tighter triggers)
+
+### Liquidation executor
+
+When the price monitor detects a breach:
+
+1. Position is marked as liquidating (DB flag + in-memory set)
+2. Shares are sold on Polymarket CLOB (FOK/FAK orders, up to 5 retries with exponential backoff)
+3. Loan is repaid from sale proceeds
+4. Liquidation penalty is applied and transferred to the protocol fee address
+5. Remaining equity stays in the user's deposit wallet
+6. Position is marked `LIQUIDATED`
+
+Dust positions (< 0.01 shares or < $1 notional) are finalized without further sell attempts.
+
+### Market resolution
+
+When a Polymarket market resolves (e.g., an event outcome is determined), positions are redeemed on-chain via the CTF (Conditional Token Framework) rather than sold on the CLOB:
+
+- Winners receive $1.00 per share
+- Losers receive $0.00 per share
+- Redemption is atomic — proceeds land in the deposit wallet in the same transaction
+
+## Data flow: opening a leveraged position
+
+<Steps>
+  <Step title="User submits order">
+    Frontend sends leverage, market, direction, and margin amount to the backend API.
+  </Step>
+  <Step title="Validation">
+    Backend checks: leverage caps (price-based tiers, category, spread, depth), user balance, lending pool availability.
+  </Step>
+  <Step title="Loan issuance">
+    Backend calls `pool.borrow()` on-chain. Borrowed funds are transferred to the user's deposit wallet as pUSD (wrapped USDC.e).
+  </Step>
+  <Step title="Order execution">
+    Backend places a market order on Polymarket CLOB through the deposit wallet. Shares are purchased at the best available price.
+  </Step>
+  <Step title="Position tracking">
+    Position is recorded in Postgres with entry price, shares, leverage, loan IDs, and computed liquidation price. The price monitor begins evaluating it on every tick.
+  </Step>
+</Steps>
+
+## Tech stack
+
+| Component | Technology |
+|---|---|
+| Backend runtime | Bun (TypeScript) |
+| Database | PostgreSQL |
+| Blockchain | Polygon (viem) |
+| Trading venue | Polymarket CLOB (REST + WebSocket) |
+| Frontend | Next.js (deployed on Netlify) |
+| Smart contracts | Solidity (Foundry) |
+| Hosting | GCP VMs (systemd) |

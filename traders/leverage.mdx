@@ -1,0 +1,77 @@
+---
+title: "How Leverage Works"
+description: "Understand how Amplifi provides up to 10x leverage on Polymarket positions using isolated lending pools."
+---
+
+## Overview
+
+Leverage on Amplifi lets you control a larger position than your deposited margin. At 5x leverage, a $10 deposit controls a $50 position. The additional $40 is borrowed from a lending pool and must be repaid when the position closes.
+
+You are trading **real Polymarket shares** — not a synthetic or perpetual contract. Your deposit wallet holds actual conditional tokens on Polymarket's CLOB.
+
+## How it works
+
+1. You deposit $10 as margin
+2. You select 5x leverage on a market priced at $0.50
+3. Amplifi borrows $40 from the lending pool
+4. Your deposit wallet buys 100 shares at $0.50 ($50 total)
+5. If the price rises to $0.60, your shares are worth $60 — a $10 profit on $10 margin (100% return vs. 20% at 1x)
+6. If the price drops to your liquidation price, Amplifi sells your shares, repays the $40 loan, and returns remaining equity
+
+## Leverage caps
+
+Maximum leverage depends on several factors:
+
+### Price-based tiers
+
+Leverage is capped by the entry price of the shares. Lower-priced shares have lower max leverage because small price moves represent larger percentage swings.
+
+| Entry price | Max leverage |
+|---|---|
+| $0.40+ | 10x |
+| $0.36 – $0.39 | 9x |
+| $0.32 – $0.35 | 8x |
+| $0.28 – $0.31 | 7x |
+| $0.24 – $0.27 | 6x |
+| $0.20 – $0.23 | 5x |
+| $0.15 – $0.19 | 4x |
+| $0.10 – $0.14 | 3x |
+| $0.05 – $0.09 | 2x |
+| Below $0.05 | 1x (no leverage) |
+
+### Category restrictions
+
+Currently, only **crypto** markets support leverage above 1x. This includes BTC, ETH, and other cryptocurrency price markets on Polymarket.
+
+Other categories (politics, sports, geopolitics, culture) are available at 1x only. This will expand as the risk engine is validated across more market types.
+
+### Additional caps
+
+- **Spread-based:** If the bid-ask spread is wide, max leverage is reduced. Formula: `floor(1 / (4 × spread))`, clamped between 1x and 10x.
+- **Depth-based:** The orderbook must have sufficient bid-side depth relative to your position size. Thin books reduce available leverage.
+- **Low-volume markets:** Markets with under $50k in 24h volume are capped at 2x.
+- **Live sports:** Individual live games are capped at 3x regardless of price.
+
+## P&L math
+
+**Long position (buying Yes shares):**
+
+```
+Profit = (exitPrice - entryPrice) × shares - fees
+ROI    = Profit / margin
+```
+
+At 5x leverage, a 10% price increase yields a 50% return on your margin (before fees and interest).
+
+**Important:** Losses are also amplified. A 10% price decrease at 5x leverage means a 50% loss on your margin.
+
+## Liquidation
+
+Every leveraged position has a liquidation price. If the market price reaches this threshold, Amplifi automatically closes the position to protect the lending pool.
+
+The liquidation price is **not static** — it adjusts based on:
+- Accrued interest on the loan
+- Current orderbook depth
+- CLOB taker fees
+
+See [Risk Engine and Liquidations](/risk/risk-engine-and-liquidations) for the full breakdown.

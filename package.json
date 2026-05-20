@@ -1,0 +1,11 @@
+{
+  "name": "amplifi-docs",
+  "private": true,
+  "scripts": {
+    "dev": "mintlify dev",
+    "build": "mintlify build"
+  },
+  "devDependencies": {
+    "mintlify": "^4"
+  }
+}

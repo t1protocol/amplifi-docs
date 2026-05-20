@@ -1,0 +1,67 @@
+---
+title: "Order Types"
+description: "Market orders, limit orders, and take-profit orders available on Amplifi."
+---
+
+## Market orders
+
+The default order type. When you open a position, Amplifi places a market order on the Polymarket CLOB that executes at the best available price.
+
+- **Execution:** Immediate (fill-or-kill)
+- **Price:** Best available ask (for buys) or bid (for sells)
+- **Leverage:** Loan is issued and shares are purchased in a single flow
+- **Use case:** Opening and closing positions when you want immediate execution
+
+<Note>
+Amplifi's market order is technically a tight limit order derived from the current orderbook snapshot. On very thin or volatile books, the order may not fill if the price moves between snapshot and submission.
+</Note>
+
+## GTC limit orders
+
+Good-Till-Cancelled limit orders let you specify the exact price at which you want to enter a position.
+
+- **Execution:** Rests on the orderbook until filled, cancelled, or the market closes
+- **Price:** Your specified limit price
+- **Leverage:** For leveraged limit orders, the loan is issued at order placement time (not fill time)
+- **Partial fills:** Supported — your position is created on the first fill and grows as subsequent fills arrive
+
+### How leveraged limit orders work
+
+1. You place a limit buy at $0.45 with 5x leverage on $10 margin
+2. Amplifi immediately borrows $40 from the lending pool
+3. The order rests on Polymarket's CLOB at $0.45
+4. As fills come in, shares are added to your position
+5. If the order is cancelled before filling completely, the unused loan portion is repaid automatically
+
+<Warning>
+Because the loan is issued at order placement, you begin accruing interest immediately — even before the order fills. This is the tradeoff for guaranteed loan availability at your desired entry.
+</Warning>
+
+## Take-profit orders
+
+After opening a position, you can set a take-profit order to automatically close at a target price.
+
+- **Execution:** Rests on the orderbook as a sell order at your target price
+- **Price:** Your specified take-profit price (must be above entry for longs)
+- **Cancellation:** Automatically cancelled if the position is closed or liquidated
+- **Use case:** Locking in gains without monitoring the position
+
+### Setting a take-profit
+
+1. Open a position
+2. Click **Take Profit** on the position card
+3. Enter your target sell price
+4. The order is placed on the Polymarket CLOB
+
+You can cancel and re-set take-profit orders at any time.
+
+## Order status reference
+
+| Status | Meaning |
+|---|---|
+| **Pending** | Order submitted, awaiting CLOB acknowledgment |
+| **Resting** | Limit order live on the orderbook |
+| **Partially filled** | Some shares filled, order still resting for remainder |
+| **Filled** | Fully executed |
+| **Cancelled** | Cancelled by user or system |
+| **Failed** | Order rejected by the CLOB |

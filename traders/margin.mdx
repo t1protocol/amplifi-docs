@@ -1,0 +1,78 @@
+---
+title: "Margin"
+description: "How margin works on Amplifi — isolated per-position margin with dynamic liquidation thresholds."
+---
+
+## Isolated margin
+
+Every position on Amplifi has its own margin. There is no cross-margin or account-level health factor. If one position is liquidated, it does not affect your other positions.
+
+**Your margin = your deposit for that specific position.**
+
+At 5x leverage with $10 margin:
+- Position size: $50
+- Loan: $40
+- Your equity: $10
+
+## Margin and equity
+
+Your **equity** in a position changes as the market moves:
+
+```
+equity = (currentPrice × shares) - loanPrincipal - accruedInterest
+```
+
+- If the price goes up, your equity increases
+- If the price goes down, your equity decreases
+- Interest accrual slowly reduces equity over time
+
+Your P&L is the change in equity from your initial margin.
+
+## Liquidation threshold
+
+Amplifi uses a **Layer 1 threshold** of 30%. This means liquidation triggers when your projected post-liquidation equity (after selling, repaying the loan, and accounting for fees) drops to approximately 30% of your original margin.
+
+This is intentionally conservative — you do not lose everything on liquidation. The threshold exists to:
+
+1. Protect the lending pool from bad debt
+2. Leave you with some equity after liquidation
+3. Provide a buffer for execution slippage and fees
+
+### What affects the liquidation price
+
+| Factor | Effect |
+|---|---|
+| **Leverage** | Higher leverage = liquidation price closer to entry |
+| **Accrued interest** | Tightens the liquidation threshold over time |
+| **Orderbook depth** | Thin liquidity pushes the liquidation price closer to the current price |
+| **CLOB fees** | Accounted for in the liquidation price calculation (quadratic formula) |
+
+<Warning>
+Your liquidation price is **dynamic**. It can move closer to the current price if orderbook liquidity decreases or as interest accrues. Always monitor your positions.
+</Warning>
+
+## Example
+
+| | Value |
+|---|---|
+| Entry price | $0.50 |
+| Leverage | 5x |
+| Margin | $10 |
+| Position size | $50 |
+| Shares | 100 |
+| Loan principal | $40 |
+| Approximate liquidation price | ~$0.43 |
+
+If the price drops from $0.50 to $0.43:
+- Shares worth: $43
+- Loan: $40
+- Remaining equity: ~$3 (30% of original $10 margin)
+- Liquidation triggers → shares sold → loan repaid → ~$3 returned to your wallet (minus fees and penalty)
+
+## Adding margin
+
+Currently, you cannot add margin to an existing position. To increase your exposure to a market, open a new position. Existing positions with the same direction may be merged automatically.
+
+## Minimum deposit
+
+The minimum deposit amount is **$1 USDC**.

@@ -1,0 +1,95 @@
+---
+title: "How to Start Trading"
+description: "A step-by-step guide to opening your first leveraged position on Amplifi."
+---
+
+## Prerequisites
+
+- A Web3 wallet (MetaMask, Rabby, or any WalletConnect-compatible wallet)
+- USDC on Polygon (you can bridge from Ethereum or other chains)
+
+## Step-by-step walkthrough
+
+<Steps>
+  <Step title="Connect your wallet">
+    Go to [app.amplifi.finance](https://app.amplifi.finance) and click **Connect Wallet**. Amplifi supports any EVM wallet via WalletConnect. You will sign a message to authenticate — no on-chain transaction required.
+  </Step>
+  <Step title="Deposit USDC">
+    Click **Deposit** and enter the amount of USDC you want to use as trading margin. Your USDC is transferred to your Amplifi deposit wallet on Polygon — a smart contract wallet created specifically for you.
+
+    <Info>
+      Minimum deposit is $1. Your deposit wallet address is deterministic and unique to your account.
+    </Info>
+  </Step>
+  <Step title="Browse markets">
+    Explore available Polymarket markets on the main screen. Markets are organized by category: crypto, politics, sports, and more. Each market shows the current price, 24h volume, and available leverage.
+  </Step>
+  <Step title="Pick a direction and leverage">
+    Select a market and choose your position:
+    - **Yes** or **No** — your directional bet
+    - **Leverage** — from 1x to 10x (crypto markets only; varies by price and liquidity)
+    - **Margin** — the amount of your own capital to put up
+
+    The UI shows you the total position size (margin x leverage) and the number of shares you will receive.
+  </Step>
+  <Step title="Review the preview">
+    Before confirming, review the order preview:
+
+    | Field | What it means |
+    |---|---|
+    | **Entry price** | The price you're buying shares at |
+    | **Liquidation price** | The price at which your position will be automatically closed |
+    | **Position size** | Total value of your position (margin x leverage) |
+    | **Shares** | Number of Polymarket conditional tokens you'll hold |
+    | **Fees** | Currently zero — Amplifi does not charge trading fees |
+
+    <Warning>
+      The liquidation price is not static. It adjusts based on orderbook depth and accrued interest. If liquidity thins out, your liquidation price moves closer to the current price.
+    </Warning>
+  </Step>
+  <Step title="Confirm and trade">
+    Click **Confirm** to open your position. Amplifi will:
+    1. Borrow from the lending pool (if leveraged)
+    2. Execute the trade on Polymarket's orderbook
+    3. Begin monitoring your position in real-time
+
+    Your position appears in the **Positions** tab immediately.
+  </Step>
+</Steps>
+
+## What to expect after opening
+
+### Monitoring your position
+Your position card shows real-time P&L, current market price, and distance to liquidation. The liquidation price is displayed as a red line on the price chart.
+
+### Closing your position
+Click **Close** on any open position. Amplifi sells your shares on the Polymarket CLOB at the best available bid, repays any outstanding loan, and returns the remaining equity to your deposit wallet.
+
+### If you get liquidated
+If the market price reaches your liquidation threshold:
+1. Amplifi automatically sells your shares
+2. The loan is repaid from the proceeds
+3. A liquidation penalty is applied (percentage of remaining equity)
+4. Any leftover equity stays in your deposit wallet
+
+You do not lose your entire margin — the liquidation triggers with equity remaining (the Layer 1 threshold ensures ~30% of your equity is preserved at trigger time, before execution slippage and fees).
+
+### Withdrawing
+Click **Withdraw** to move USDC from your deposit wallet back to your connected wallet. Withdrawals are processed on Polygon and typically complete within seconds. A small gas fee ($0.20) is deducted to cover the Polygon transaction.
+
+## Tips
+
+<CardGroup cols={2}>
+  <Card title="Start small" icon="seedling">
+    Open a small position first to understand how leverage, liquidation prices, and the close flow work.
+  </Card>
+  <Card title="Watch the liquidation price" icon="eye">
+    It is dynamic. Thin orderbooks push it closer to the current price. Deep liquidity gives you more room.
+  </Card>
+  <Card title="Use take-profit orders" icon="bullseye">
+    Set a take-profit to automatically close your position at a target price without watching the screen.
+  </Card>
+  <Card title="Understand market resolution" icon="flag-checkered">
+    When a market resolves, winning positions pay $1/share and losing positions pay $0. You do not need to close manually — redemption is automatic.
+  </Card>
+</CardGroup>

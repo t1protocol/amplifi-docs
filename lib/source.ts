@@ -8,6 +8,6 @@ const mdxSource = docs.toFumadocsSource();
 const files = (mdxSource.files as any)();
 
 export const source = loader({
-  baseUrl: "/docs",
+  baseUrl: "/",
   source: { files },
 });

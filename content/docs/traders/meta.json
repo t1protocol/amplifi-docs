@@ -1,0 +1,11 @@
+{
+  "title": "Traders",
+  "pages": [
+    "leverage",
+    "wallets",
+    "available-markets",
+    "order-types",
+    "fees",
+    "margin"
+  ]
+}

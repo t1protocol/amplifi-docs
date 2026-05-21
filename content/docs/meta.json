@@ -1,0 +1,14 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "index",
+    "---About Amplifi---",
+    "about",
+    "---Getting Started---",
+    "getting-started",
+    "---Traders---",
+    "traders",
+    "---Risk---",
+    "risk"
+  ]
+}

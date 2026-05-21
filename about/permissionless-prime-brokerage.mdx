@@ -11,27 +11,22 @@ The catch: access requires institutional-grade relationships, KYC/KYB, legal agr
 
 ## Amplifi as DeFi's prime broker
 
-Amplifi provides the same core services — **leverage, margin accounts, and credit extension** — but without the gatekeeping.
+Amplifi provides the same core services — **leverage, margin accounts, and credit extension** — in a permissionless way.
 
 - **No KYC or credit score.** Anyone with a wallet and USDC can access leverage.
-- **No minimum account size.** Deposit as little as $1.
-- **No bilateral trust.** Lending pools extend credit because a policy engine enforces fund usage — not because they trust the borrower.
+- **No minimum account size.** Deposit as little as \$2.
+- **No bilateral trust.** Lending pools extend credit to trader's margin account because Amplifi risk engine enforces restriction on use of funds and liquidation policies.
 - **No custodial risk.** Your funds live in a smart contract wallet you control. Amplifi cannot move funds outside of approved trading operations and liquidation.
 
 ## How it works
 
-Traditional prime brokers extend credit because they control the assets and can liquidate if needed. Amplifi achieves the same outcome through **key encumbrance**: a server-managed keypair controls the deposit wallet, enforcing spending policies and executing liquidations programmatically.
+Traditional prime brokers extend credit because they control the assets and can liquidate if needed. Amplifi achieves the same outcome through **TEE-private key encumbrance**: a TEE managed keypair controls the deposit wallet, enforcing spending policies and executing liquidations programmatically.
 
-The lending pool is the credit facility. The deposit wallet is the margin account. The risk engine is the margin call desk. None of these require a human in the loop, a phone call, or a legal agreement.
 
 ## Why this matters
 
-Prediction markets are growing at 8%+ month-over-month. Polymarket alone processes billions in monthly volume. But every trade is at 1x — there is no native leverage.
+The cost of automated trading is falling fast. With AI, agentic systems and semi-professional traders are running strategies that used to require a desk at a hedge fund. As Citadel CEO Ken [Griffin commented](https://fortune.com/2026/05/18/billionaire-ken-griffin-ai-garbage-depressed-dramatic-impact-society/), "*work that we would usually do with people with master's and PhDs in finance over the course of weeks or months is being done by AI agents over the course of hours or days.*"
 
-Amplifi enables:
+However, access to prime brokerage services (margin, cross-venue collateralization, leveraged trading) which provide capital efficiency is still limited to institutional traders.
 
-- **Leveraged prediction market trading** — up to 10x on crypto markets
-- **Capital efficiency** — trade a $500 position with $50 in margin
-- **Institutional-grade risk management** — dynamic liquidation pricing, orderbook depth monitoring, isolated pools
-
-This is prime brokerage for the rest of us.
+Our mission is to close that gap. By making prime brokerage tools permissionless, we lower the entry barrier for the next generation of traders, whether human or agentic. The same way DeFi made financial access permissionless, Amplifi makes the credit and margin layer permissionless.

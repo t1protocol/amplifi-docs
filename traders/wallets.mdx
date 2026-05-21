@@ -11,7 +11,7 @@ The wallet is materialized (deployed) by the Polymarket relayer on your first tr
 
 ## How it works
 
-Your deposit wallet is controlled by a **server-managed owner keypair**. This keypair signs all trading operations on your behalf using EIP-712 typed data signatures. The Polymarket relayer submits the transactions and pays gas — you never need POL (Polygon's native token).
+Your deposit wallet is controlled by a **TEE-controlled owner keypair**. This keypair signs all trading operations on your behalf using EIP-712 typed data signatures. The Polymarket relayer submits the transactions and pays gas — you never need POL (Polygon's native token).
 
 ### What the wallet can do
 
@@ -33,7 +33,7 @@ This restriction is what enables under-collateralized lending. The lending pool 
 
 The Polymarket relayer pays all gas costs for wallet operations (deployment, approvals, trades, withdrawals). You do not need to hold POL or any gas token.
 
-A small withdrawal fee ($0.20 USDC) covers the Polygon transaction cost for the withdrawal operation.
+A small withdrawal fee (\$0.20 USDC) covers the Polygon transaction cost for the withdrawal operation.
 
 ## Deposit and withdrawal flow
 
@@ -49,7 +49,7 @@ A small withdrawal fee ($0.20 USDC) covers the Polygon transaction cost for the 
 1. You request a withdrawal from the Amplifi UI
 2. The wallet unwraps pUSD back to USDC.e via the Offramp contract
 3. USDC.e is sent directly to your connected wallet on Polygon
-4. A $0.20 fee is deducted to cover gas
+4. A \$0.20 fee is deducted to cover gas
 
 <Info>
 Withdrawals are Polygon-native. There is no bridge to Ethereum or other chains — you receive USDC.e on Polygon.
@@ -60,7 +60,7 @@ Withdrawals are Polygon-native. There is no bridge to Ethereum or other chains �
 | Property | Detail |
 |---|---|
 | **Wallet type** | ERC-1967 proxy, CREATE2-derived |
-| **Key management** | Server-managed owner EOA per user |
+| **Key management** | TEE-controlled owner EOA per user |
 | **Transaction signing** | EIP-712 typed data |
 | **Gas payment** | Polymarket relayer (user pays nothing) |
 | **Fund restrictions** | Whitelisted contracts only (exchange, lending pool, onramp/offramp) |

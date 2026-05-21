@@ -70,14 +70,14 @@ When the price monitor detects a breach:
 5. Remaining equity stays in the user's deposit wallet
 6. Position is marked `LIQUIDATED`
 
-Dust positions (< 0.01 shares or < $1 notional) are finalized without further sell attempts.
+Dust positions (< 0.01 shares or < \$1 notional) are finalized without further sell attempts.
 
 ### Market resolution
 
 When a Polymarket market resolves (e.g., an event outcome is determined), positions are redeemed on-chain via the CTF (Conditional Token Framework) rather than sold on the CLOB:
 
-- Winners receive $1.00 per share
-- Losers receive $0.00 per share
+- Winners receive \$1.00 per share
+- Losers receive \$0.00 per share
 - Redemption is atomic — proceeds land in the deposit wallet in the same transaction
 
 ## Data flow: opening a leveraged position

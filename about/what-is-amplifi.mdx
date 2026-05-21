@@ -1,77 +1,59 @@
 ---
 title: "What is Amplifi?"
-description: "Amplifi is the permissionless credit layer for DeFi — enabling under-collateralized lending and up to 10x leverage on prediction markets."
+description: "Amplifi is the permissionless prime brokerage for prediction markets. Our first product, margin on Polymarket is live. You can now trade with up to 10x leverage on Polymarket"
 ---
 
 ## The short version
 
-Amplifi lets you trade Polymarket positions on margin. You deposit collateral, Amplifi borrows the rest from a lending pool, and you trade with up to 10x leverage. If your position moves against you, Amplifi's risk engine liquidates automatically to protect the pool.
+Amplifi is the permissionless prime brokerage for prediction markets and perpDEXs. Our first product, margin on Polymarket is live. You can deposit USDC as margin, get credit from Amplifi's lending pools, and trade up to 10x leveraged positions directly on Polymarket's orderbook. Behind the scenes, a TEE-controlled margin account enforces the rules of the loan and handles liquidation automatically.
 
-No KYC. No credit score. No custodial counterparty. Just collateral, a policy, and a liquidation engine.
+Longer term, Amplifi is the first DeFi-native permissionless prime brokerage protocol. Prime brokerage services (cross-margin, leverage, credit lines) have historically been available only to large institutions through traditional prime brokers. Amplifi makes the same toolkit permissionless and available to anyone who can connect their wallet. Today that means 10x leverage on Polymarket. Soon it will mean cross-margin across trading venues and credit lines secured by any position you hold across DeFi.
 
 ## The problem
 
-DeFi lending today requires over-collateralization. To borrow $100, you lock up $150+. This locks capital, limits leverage, and blocks strategies that traders actually need: leveraged prediction markets, cross-venue margin, and basis trading.
+Prediction markets had a breakout year. Polymarket alone crossed \$10B in monthly volume, Kalshi opened to retail, and dozens of new platforms launched across crypto and TradFi. But the infrastructure hasn't kept up with the demand. Every dollar deployed on a prediction market today sits at 1x — fully collateralized, single-venue, earning nothing while it waits. There is no native margin, no cross-venue netting, and no way to put idle capital to work.
 
-Prediction markets alone process $10B+/month in volume — all at 1x. There is no native margin system on Polymarket, Kalshi, or any major prediction market.
+In every other financial market, capital efficiency is what determines winners. Futures traders post margin, not full notional. Market makers offset risk across correlated positions. Lenders earn yield on capital that would otherwise sit idle. The infrastructure for capital efficiency, which exists in all mature markets, does not yet exist in prediction markets.
+
+Amplifi exists to close that gap. Instead of locking up \$500 to take a \$500 position, you deposit \$50 and borrow the rest. Your capital works harder, your conviction translates into real exposure, and the capital you aren't using can earn yield in a lending pool instead of sitting in a wallet doing nothing.
 
 ## How Amplifi works
 
 <Steps>
   <Step title="Deposit collateral">
-    You deposit USDC as margin into your Amplifi wallet — a smart contract wallet on Polygon controlled by a server-managed keypair.
+    Deposit USDC as margin into your Amplifi margin account — a smart contract wallet on Polygon controlled by a Trusted Execution Environment (TEE) managed keypair.
+  </Step>
+  <Step title="Place an order">
+    Choose your margin and leverage amount. Market and limit orders are supported.
   </Step>
   <Step title="Borrow from the lending pool">
-    Amplifi borrows the remainder from an isolated lending pool. At 5x leverage on a $50 position, you deposit $10 and Amplifi borrows $40.
+    Your Amplifi margin account borrows from Amplifi lending pools to open the desired notional position. At 5x leverage on a \$50 notional position, you deposit \$10 and Amplifi margin account borrows \$40.
   </Step>
-  <Step title="Trade on Polymarket">
-    Your full position is opened on Polymarket's CLOB through your deposit wallet. You are trading real Polymarket shares — not a synthetic or derivative.
+  <Step title="Order executes on Polymarket">
+    Your full position is opened on Polymarket's CLOB through your margin wallet. You receive real Polymarket shares in your margin account.
   </Step>
   <Step title="Risk engine monitors continuously">
-    Amplifi's price monitor checks orderbook prices and depth every few seconds. Liquidation prices adjust dynamically based on real-time liquidity.
+    Amplifi's risk engine monitors orderbook prices and depth in real-time. Liquidation prices adjust dynamically based on real-time liquidity.
   </Step>
-  <Step title="Close or get liquidated">
-    You close your position at any time. If the price hits your liquidation threshold, Amplifi sells your shares automatically, repays the loan, and returns remaining equity to you.
+  <Step title="Close position or liquidation">
+    Close your position at any time or hold your shares until market resolution. Your winnings are automatically claimed by your margin account. If the price moves against you and hits your liquidation threshold, Amplifi sells your shares automatically, repays the loan, and returns remaining equity to you.
   </Step>
 </Steps>
 
-## Architecture at a glance
+## Key design decisions
 
-```
-Trader → Amplifi Wallet (Polygon) → Polymarket CLOB
-                  ↑
-          Lending Pool (isolated, on-chain)
-                  ↑
-              Risk Engine (price monitor + depth adjustment)
-```
-
-**Key design decisions:**
-
-- **Isolated lending pools.** Each pool has its own capital, parameters, and risk profile. A bad outcome in one pool cannot affect another. This is not a shared insurance fund — it is structural isolation.
-- **Real positions, not synthetics.** You hold actual Polymarket conditional tokens. Settlement, redemption, and market resolution all work natively.
-- **Deposit wallets, not custodial accounts.** Each user gets a CREATE2-derived smart contract wallet on Polygon. The wallet enforces spending policies — funds can only be used for approved trading operations.
+- **Isolated lending pools.** Isolated lending pools enable risk-adjusted pricing to get margin in different Polymarket events. Isolated lending pool design also prevents bad debt event in a given Polymarket event from impacting other lenders. This design is inspired by Morpho.
+- **Real positions, not synthetics.** You hold actual Polymarket conditional tokens. Settlement, redemption, and market resolution all work natively. As a result, your positions count towards Polymarket rewards, distributions and rebates.
+- **Deposit wallets, not custodial accounts.** Each user gets a CREATE2-derived smart contract wallet on Polygon. The wallet enforces spending and liquidation policies: borrowed funds can only be used for approved trading operations and positions will be sold to ensure lenders can be made whole.
 - **Dynamic liquidation pricing.** Liquidation thresholds adjust based on orderbook depth, not static ratios. Thin liquidity = tighter trigger. Deep liquidity = more room.
 
 ## Who is Amplifi for?
 
 <CardGroup cols={2}>
   <Card title="Traders" icon="chart-line">
-    Access up to 10x leverage on Polymarket crypto markets. Trade with conviction without tying up 100% of your capital.
+    Access up to 10x leverage on Polymarket. You will soon be able to borrow against your positions.
   </Card>
   <Card title="Lenders" icon="vault">
-    Supply capital to isolated lending pools and earn yield from borrower interest. Risk is bounded by pool isolation and automated liquidation — not bilateral trust.
+    Supply capital to lending pools to enable margin trading and earn interest. Amplifi's risk engine enforces liquidations automatically to protect pool capital from bad debt.
   </Card>
 </CardGroup>
-
-## What makes Amplifi different
-
-| | Amplifi | Gearbox | Wildcat | 3Jane |
-|---|---|---|---|---|
-| Under-collateralized | Yes | Yes | Yes | Yes |
-| Prediction market leverage | Yes | No (smart contract only) | No enforcement | No |
-| Permissionless | Yes | Yes | KYB required | US credit score required |
-| Automated liquidation | Yes | Yes | No | Off-chain enforcement |
-| Cross-chain | Yes | No | No | Limited |
-| Self-custodial | Yes (deposit wallet) | Yes | Borrower custody | Yes |
-
-Amplifi is the only protocol that combines non-custodial fund controls with an automated liquidation engine across on-chain and off-chain venues.

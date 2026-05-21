@@ -5,20 +5,21 @@ description: "How Amplifi enables lending beyond collateral through deposit wall
 
 ## The over-collateralization problem
 
-In DeFi today, borrowing $100 requires locking up $150+ in collateral. Protocols like Aave and Compound enforce this because they have no way to restrict how borrowed funds are used. If a borrower takes the money and runs, the protocol seizes collateral. Over-collateralization is the safety net.
+In DeFi today, borrowing \$100 requires locking up \$150+ in collateral. Protocols like Aave and Compound enforce this because they have no way to restrict how borrowed funds are used. If a borrower takes the money and runs, the protocol seizes collateral. Over-collateralization is the safety net.
 
 This is capital-inefficient. It locks up more value than it creates. And it prevents an entire class of trading strategies that depend on leverage.
 
 ## How Amplifi solves it
 
-Amplifi extends credit beyond collateral by controlling how funds are used. The mechanism is **deposit wallet enforcement**:
+Amplifi extends credit beyond collateral by controlling how funds are used — programmable custody. The methodology is called **private key encumbrance**:
 
 1. Each user gets a smart contract wallet (ERC-1967 proxy) on Polygon
-2. The wallet is controlled by a server-managed keypair that enforces spending policies
-3. Funds in the wallet can only be used for approved operations: trading on Polymarket, loan repayment, and withdrawal
+2. The wallet is controlled by a TEE-managed keypair that enforces spending policies
+3. Users can use the funds in the margin wallet for approved operations: trading on Polymarket, loan repayment, and withdrawal
 4. The risk engine monitors positions continuously and liquidates automatically when thresholds breach
+5. Both liquidation and spending policies are proven on-chain by the verifiable computation property of TEEs
 
-Because the *policy* controls the funds — not the user — lending pools can extend credit beyond the collateral deposited.
+Since the margin account, not the user, controls the funds, lending pools can extend credit beyond the collateral deposited.
 
 ## Isolated lending pools
 
@@ -40,7 +41,6 @@ This is the "Morpho for under-collateralized lending" thesis. Lenders choose whi
 | **Lending pool** | On-chain contract; lender deposits and borrower repayments are transparent |
 | **Liquidation executor** | Sells shares on Polymarket CLOB, repays loan, returns remaining equity |
 
-No credit scores. No KYC. No legal agreements. The trust is in the code — spending restrictions and liquidation logic are deterministic and auditable.
 
 ## What happens on default
 
@@ -48,9 +48,7 @@ If a position is liquidated and the sale proceeds are less than the loan princip
 
 Amplifi mitigates bad debt through:
 
+- **Market specific risk parameters** that account for individual market dynamics
 - **Dynamic liquidation pricing** that tightens as orderbook depth thins
-- **Interest-adjusted thresholds** that account for accrued borrowing costs
-- **Depth multiplier requirements** that ensure sufficient liquidity exists to execute the liquidation
-- **Liquidation penalty** that creates a buffer between the trigger price and the bad debt price
 
 The goal is not to eliminate bad debt — it is to make it rare and bounded.

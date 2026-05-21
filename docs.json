@@ -1,0 +1,91 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Amplifi",
+  "colors": {
+    "primary": "#6366F1",
+    "light": "#818CF8",
+    "dark": "#4F46E5"
+  },
+  "favicon": "/images/favicon.svg",
+  "navigation": {
+    "anchors": [
+      {
+        "anchor": "Documentation",
+        "icon": "book-open",
+        "groups": [
+          {
+            "group": "About Amplifi",
+            "pages": [
+              "about/what-is-amplifi",
+              "about/permissionless-prime-brokerage",
+              "about/under-collateralized-lending",
+              "about/technical-overview"
+            ]
+          },
+          {
+            "group": "Getting Started",
+            "pages": [
+              "getting-started/how-to-start-trading"
+            ]
+          },
+          {
+            "group": "Traders",
+            "pages": [
+              "traders/leverage",
+              "traders/wallets",
+              "traders/available-markets",
+              "traders/order-types",
+              "traders/fees",
+              "traders/margin"
+            ]
+          },
+          {
+            "group": "Risk",
+            "pages": [
+              "risk/risk-engine-and-liquidations",
+              "risk/risks"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "GitHub",
+          "href": "https://github.com/t1protocol",
+          "icon": "github"
+        },
+        {
+          "anchor": "Twitter",
+          "href": "https://x.com/amplikifi",
+          "icon": "twitter"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "light": "/images/logo-light.svg",
+    "dark": "/images/logo-dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "App",
+        "href": "https://app.amplifi.finance"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Launch App",
+      "href": "https://app.amplifi.finance"
+    }
+  },
+  "footer": {
+    "socials": {
+      "twitter": "https://x.com/amplikifi",
+      "github": "https://github.com/t1protocol"
+    }
+  }
+}

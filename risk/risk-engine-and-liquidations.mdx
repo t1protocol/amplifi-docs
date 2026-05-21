@@ -60,7 +60,7 @@ maxAdjustment     = baseLiqPrice - badDebtPrice
 adjustedLiqPrice  = baseLiqPrice + (1 - depthRatio) × maxAdjustment
 ```
 
-**Why this matters:** A $500 position in a market with $50 of resting bids will have a much tighter liquidation price than the same position in a market with $5,000 of bids. The risk engine adapts to the actual execution environment, not a theoretical model.
+**Why this matters:** A \$500 position in a market with \$50 of resting bids will have a much tighter liquidation price than the same position in a market with \$5,000 of bids. The risk engine adapts to the actual execution environment, not a theoretical model.
 
 <Note>
 Depth adjustment transitions and illiquidity warnings use a 60-second per-position cooldown to prevent oscillation.
@@ -103,7 +103,7 @@ When the price monitor detects that a position's price has breached its liquidat
 
 ### Dust positions
 
-Positions with fewer than 0.01 shares or less than $1 in notional value are finalized without further sell attempts. The Polymarket CLOB has minimum order size requirements that make tiny positions unsellable.
+Positions with fewer than 0.01 shares or less than \$1 in notional value are finalized without further sell attempts. The Polymarket CLOB has minimum order size requirements that make tiny positions unsellable.
 
 ### Cooldown on failure
 

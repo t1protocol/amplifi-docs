@@ -23,7 +23,7 @@ Returns the user's deposit wallet address immediately (CREATE2-derived), plus `a
 
 ### 2. Burn USDC on the source chain
 
-A standard CCTP v2 `depositForBurn` with the **deposit wallet** as the mint recipient. Fast transfers (`minFinalityThreshold: 1000`) attest in seconds.
+A CCTP v2 `depositForBurn` with the **deposit wallet** as the mint recipient. On chains with Fast Transfer (Base, Arbitrum, Ethereum, …) use `minFinalityThreshold: 1000` with a nonzero `maxFee` — attests in seconds for a few bps. On chains where Circle marks Fast Transfer N/A because finality is already near-instant (for example Injective, domain 29), use a standard transfer — `minFinalityThreshold: 2000`, `maxFee: 0` — which is free and attests just as quickly.
 
 ### 3. Relay the mint on Polygon
 

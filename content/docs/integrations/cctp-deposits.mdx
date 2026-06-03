@@ -1,0 +1,74 @@
+---
+title: "Deposit via CCTP (Native USDC)"
+description: "Fund Amplifi accounts programmatically with native USDC from any CCTP-enabled chain."
+---
+
+## Overview
+
+Integration partners can fund Amplifi accounts by sending **native USDC over Circle's CCTP** from any CCTP-enabled chain (Base, Arbitrum, Ethereum, Noble/IBC, and others). Amplifi converts the delivered USDC to pUSD (the trading collateral) and credits the account automatically — no manual steps, no Amplifi-side coordination.
+
+Each end-user needs an EOA (for example, a Turnkey-managed key). The EOA never needs gas on Polygon for any Amplifi operation; the only gas anywhere in the flow is whoever relays the CCTP mint.
+
+## The flow
+
+### 1. Provision a deposit wallet
+
+```bash
+curl -X POST https://app.amplifi.finance/api/polymarket/wallet \
+  -H "Content-Type: application/json" \
+  -d '{"userAddress": "<END_USER_EOA>"}'
+```
+
+Returns the user's deposit wallet address immediately (CREATE2-derived), plus `approved` / `clobReady` readiness flags. The call is idempotent — safe to re-call any time. You can send funds to the address right away; it is valid before the contract is deployed.
+
+### 2. Burn USDC on the source chain
+
+A standard CCTP v2 `depositForBurn` with the **deposit wallet** as the mint recipient. Fast transfers (`minFinalityThreshold: 1000`) attest in seconds.
+
+### 3. Relay the mint on Polygon
+
+Poll Circle's Iris API with the burn tx hash until the attestation is `complete`, then call `MessageTransmitter.receiveMessage` on Polygon. Whoever relays holds the **mint transaction hash** — that hash is what you submit to Amplifi. (If you use Circle's forwarding service instead of self-relaying, Iris returns the delivery hash as `forwardTxHash`.)
+
+### 4. Confirm the deposit
+
+```bash
+curl -X POST https://app.amplifi.finance/api/polymarket/bridge/deposit-confirmed \
+  -H "Content-Type: application/json" \
+  -d '{"userAddress": "<END_USER_EOA>", "txHash": "<POLYGON_MINT_TX_HASH>"}'
+```
+
+Response:
+
+```json
+{ "forwarding": true, "amount": "2999610", "txHash": "0x…", "wrapped": false }
+```
+
+`forwarding: true` means Amplifi verified the mint on-chain and is converting the USDC to pUSD. The credit lands automatically, typically **30–60 seconds** after the mint (dominated by the collateral conversion).
+
+### 5. Poll the balance until credited
+
+```bash
+curl https://app.amplifi.finance/api/polymarket/balance/<END_USER_EOA>
+```
+
+The deposit is complete when `availableBalanceFormatted` has grown by the deposited amount. The account can trade immediately from that point.
+
+## Error contract
+
+| Response | Meaning | What to do |
+| --- | --- | --- |
+| `2xx` | Verified; conversion in progress or credited | Poll balance |
+| `4xx` | Permanent — the tx will never qualify (reverted, not a deposit, no transfer to this user's wallet) | Stop; check the tx hash |
+| `5xx` | Transient (receipt not yet visible, internal hiccup) | Retry with backoff |
+
+Confirms are **idempotent**: re-sending the same tx hash is always safe and returns the existing state.
+
+## Constraints
+
+- **Minimum $2 per deposit** (conversion-route minimum). Recommend a small buffer above it — CCTP fast-transfer fees are deducted from the amount.
+- **Withdrawals pay out USDC.e on Polygon** to the user's EOA, not native USDC. Plan the return leg accordingly.
+- When onboarding many users in a burst, space the provisioning calls and retry on 5xx.
+
+## Reference implementation
+
+A single-file reference script (provision → burn → attest → relay → confirm → poll, ~200 lines of TypeScript with viem) is available from the Amplifi team — ask your integration contact.

@@ -1,4 +1,4 @@
 {
   "title": "Integrations",
-  "pages": ["position-updates-websocket"]
+  "pages": ["position-updates-websocket", "cctp-deposits"]
 }

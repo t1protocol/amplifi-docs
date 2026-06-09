@@ -1,0 +1,73 @@
+---
+title: "Position Updates WebSocket"
+description: "Subscribe to a server-pushed feed of live position state — liquidation-price drift, PnL, and status changes — instead of polling."
+---
+
+## Overview
+
+Integration partners can subscribe to a **server-pushed WebSocket** that streams the live state of a wallet's positions: liquidation-price drift, mark price, unrealized PnL, accrued interest, and terminal status changes (closed or liquidated). On connect you get a snapshot of every open position; after that, the backend pushes a `position_update` whenever something meaningful changes, plus a periodic `heartbeat`.
+
+<Info>
+Liquidation price is **not** reconstructable client-side from the market price feed. It drifts with accrued loan interest over time (it rises even at a flat market price, and can move above the entry price once equity goes negative) and with live bid depth (a depth-adjusted threshold), on top of the market price. The backend is the only place all of those inputs are wired together, so the WebSocket emits the engine's own authoritative liquidation price — the same value the liquidation trigger uses.
+</Info>
+
+## Connect
+
+```
+GET wss://amplifi.018.api.t1protocol.com/ws/positions?wallet=<0x_EOA>
+```
+
+This is a server-to-server endpoint. Send the API key as a bearer token on the upgrade request:
+
+```
+Authorization: Bearer <PARTNER_WS_API_KEY>
+```
+
+A valid key may watch any wallet. A missing or invalid key rejects the upgrade with **HTTP 401** and sends no data. Request the key from your Amplifi integration contact.
+
+## Subscription
+
+One wallet per connection — pass the wallet as the `wallet` query param (a `0x` EOA). You receive updates for every **OPEN** position under that wallet, plus its terminal transitions. To watch multiple wallets, open one connection per wallet.
+
+## Messages
+
+Every message is a JSON object with a `type` field.
+
+| Type | Payload | When |
+| --- | --- | --- |
+| `snapshot` | `{ "type": "snapshot", "data": [PositionUpdate, …] }` | Once, on connect — current state of all OPEN positions. |
+| `position_update` | `{ "type": "position_update", "data": PositionUpdate }` | A drift or status change (see gating below). |
+| `heartbeat` | `{ "type": "heartbeat", "ts": <ms> }` | Keepalive, every 15s. |
+| `error` | `{ "type": "error", "error": "snapshot_unavailable" }` | The connect-time snapshot could not be built. This is **not** "zero open positions" — reconnect to retry. |
+
+**Update gating.** Drift updates are change-gated: a `position_update` is sent when the liquidation price moves by at least `0.001`, or PnL moves by at least `$0.01`, or the status changes — and at least once every 15s per open position regardless. Terminal updates carry `status: "CLOSED" | "LIQUIDATED"` with `exitPrice` and a final `pnlUsd`. Once a position sends a terminal status it is final; no further `OPEN` update is sent for it.
+
+## PositionUpdate
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `positionId` | number | |
+| `status` | `"OPEN" \| "CLOSED" \| "LIQUIDATED"` | |
+| `tokenId` | string \| null | |
+| `marketSlug` | string | |
+| `outcome` | string | `"YES"` / `"NO"` |
+| `entryPrice` | number | |
+| `sharesAmount` | number | |
+| `leverage` | number | |
+| `markPrice` | number \| null | Mid, with best-bid fallback. |
+| `liquidationPrice` | number \| null | Engine-authoritative; `null` for 1x positions (which have no liquidation). |
+| `accruedInterest` | number \| null | USD. |
+| `pnlUsd` | number \| null | Unrealized while OPEN, realized on a terminal update. |
+| `equity` | number | Initial margin = `size / leverage`. |
+| `exitPrice` | number \| null | Terminal updates only. |
+| `ts` | number | Milliseconds since epoch. |
+
+## Reconnect
+
+There is no replay of missed updates. To resync, re-open the socket — you get a fresh `snapshot` of all OPEN positions, then resume the live stream.
+
+## Constraints
+
+- **Partner-only.** This is a server-to-server feed authenticated by a shared key, not a per-user endpoint.
+- **No order-level events.** The feed covers position state (drift + terminal status), not individual order fills or cancels.
+- **1x positions** stream mark/PnL drift with `liquidationPrice: null` — they have no liquidation threshold.
